@@ -1,4 +1,4 @@
-# Limpeza Avançada do Windows
+# 🧹 Limpeza Avançada do Windows
 
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://microsoft.com/powershell)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
