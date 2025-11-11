@@ -1,9 +1,9 @@
-# ?? Limpeza Avançada do Windows
+# Limpeza Avançada do Windows
 
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://microsoft.com/powershell)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Author](https://img.shields.io/badge/Author-EdyOne-blueviolet.svg)](https://github.com/edgardocorrea)
-[![Made with](https://img.shields.io/badge/Made%20with%20??-by%20EdyOne-red.svg)]()
+[![Made with](https://img.shields.io/badge/Made%20with%20❤️-by%20EdyOne-red.svg)](https://github.com/edgardocorrea)
 
 Uma ferramenta poderosa e intuitiva em PowerShell para realizar uma limpeza profunda e otimização completa do sistema Windows. Desenvolvida com uma interface gráfica moderna e amigável para tornar a manutenção do PC uma tarefa simples e eficiente.
 
