@@ -17,7 +17,7 @@ Manter o Windows limpo e otimizado é essencial para garantir um desempenho ráp
 
 Este script automatiza todo o processo de limpeza, de forma segura e controlada, oferecendo ao usuário total visibilidade do que está sendo feito através de uma interface gráfica caprichada, com barra de progresso em tempo real e um relatório técnico detalhado ao final.
 
-### ?? Objetivo
+### Objetivo
 
 O principal objetivo é **tornar a manutenção do Windows acessível a todos**, sem a necessidade de conhecimentos técnicos avançados. Com apenas alguns cliques, qualquer pessoa pode liberar gigabytes de espaço e melhorar a responsividade do seu sistema.
 
