@@ -23,7 +23,7 @@ Para usar a Limpeza Avançada de forma prática e recorrente, execute o comando 
 2.  Copie e cole o comando abaixo e pressione **Enter**:
 
     ```powershell
-    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/Instalar/InstalarTudo.ps1" | iex
+    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/Instalar/ConfigurarAliasLimpeza.ps1" | iex
     ```
 
 ### Pronto! Agora você tem duas formas de executar:
