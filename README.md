@@ -11,7 +11,7 @@ Uma ferramenta poderosa e intuitiva em PowerShell para realizar uma limpeza prof
 
 ---
 
-## ?? Sobre o Projeto
+## Sobre o Projeto
 
 Manter o Windows limpo e otimizado é essencial para garantir um desempenho rápido, estabilidade e mais espaço de armazenamento. Com o tempo, arquivos temporários, caches de navegadores, logs do sistema e outros dados desnecessários se acumulam, deixando o computador lento.
 
@@ -23,7 +23,7 @@ O principal objetivo é **tornar a manutenção do Windows acessível a todos**,
 
 ---
 
-## ? Principais Recursos
+##  Principais Recursos
 
 - ??? **Interface Gráfica Intuitiva**: Esqueça as linhas de comando complexas. Toda a operação é controlada por uma janela visual moderna.
 - ?? **Barra de Progresso em Tempo Real**: Acompanhe o andamento de cada etapa da limpeza, com percentual e tempo estimado de conclusão.
@@ -36,7 +36,7 @@ O principal objetivo é **tornar a manutenção do Windows acessível a todos**,
 
 ---
 
-## ?? Como Funciona
+##  Como Funciona
 
 O fluxo de uso foi pensado para ser o mais simples possível:
 
@@ -48,7 +48,7 @@ O fluxo de uso foi pensado para ser o mais simples possível:
 
 ---
 
-## ??? Screenshots
+##  Screenshots
 
 *(Adicione aqui algumas imagens da interface do seu script para deixar o README mais visual)*
 
@@ -59,7 +59,7 @@ O fluxo de uso foi pensado para ser o mais simples possível:
 
 ---
 
-## ??? Como Usar
+##  Como Usar
 
 Siga estes passos simples para executar a limpeza:
 
@@ -82,7 +82,7 @@ Siga estes passos simples para executar a limpeza:
 
 ---
 
-## ?? Informações Técnicas
+## Informações Técnicas
 
 - **Versão**: 2.1 - Edição Avançada
 - **Linguagem**: PowerShell (.ps1)
@@ -91,7 +91,7 @@ Siga estes passos simples para executar a limpeza:
 
 ---
 
-## ????? Autor
+## Autor
 
 Este projeto foi desenvolvido com dedição por **EdyOne**.
 
@@ -102,12 +102,12 @@ Este projeto foi desenvolvido com dedição por **EdyOne**.
 
 ---
 
-## ?? Licença
+##  Licença
 
 Este projeto está licenciado sob a Licença MIT. Isso significa que você pode usá-lo, modificá-lo e distribuí-lo livremente. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ---
 
-## ?? Agradecimentos
+##  Agradecimentos
 
-Um obrigado especial a toda a comunidade de desenvolvedores PowerShell e a todos os dev que tornam a vida cada vez melhor!
+Um obrigado especial a toda a comunidade de desenvolvedores PowerShell e a todos os DEV´s que tornam a vida cada vez melhor!
