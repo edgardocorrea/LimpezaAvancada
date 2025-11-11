@@ -5,7 +5,7 @@
 [![Author](https://img.shields.io/badge/Author-EdyOne-blueviolet.svg)](https://github.com/edgardocorrea)
 [![Made with](https://img.shields.io/badge/Made%20with%20❤️-by%20EdyOne-red.svg)](https://github.com/edgardocorrea)
 
-Uma ferramenta poderosa e intuitiva em PowerShell para realizar uma limpeza profunda e otimização completa do sistema Windows. Desenvolvida com uma interface gráfica moderna e amigável para tornar a manutenção do PC uma tarefa simples e eficiente.
+Uma programa desenvolvido em PowerShell para realizar uma limpeza profunda e otimização completa do sistema Windows. Desenvolvida com uma interface gráfica moderna e amigável para tornar a manutenção do PC uma tarefa simples e eficiente.
 
 > **Repositório Oficial**: `github.com/edgardocorrea/LimpezaAvancada`
 
@@ -25,9 +25,9 @@ O principal objetivo é **tornar a manutenção do Windows acessível a todos**,
 
 ##  Principais Recursos
 
-- ??? **Interface Gráfica Intuitiva**: Esqueça as linhas de comando complexas. Toda a operação é controlada por uma janela visual moderna.
-- ?? **Barra de Progresso em Tempo Real**: Acompanhe o andamento de cada etapa da limpeza, com percentual e tempo estimado de conclusão.
-- ?? **Limpeza Abrangente**: Ataca múltiplas fontes de sujeira:
+-  **Interface Gráfica Intuitiva**: Esqueça as linhas de comando complexas. Toda a operação é controlada por uma janela visual moderna.
+-  **Barra de Progresso em Tempo Real**: Acompanhe o andamento de cada etapa da limpeza, com percentual e tempo estimado de conclusão.
+-  **Limpeza Abrangente**: Verifica múltiplas fontes de sujeira:
   - Pastas temporárias do usuário e do sistema.
   - Cache do Windows Update.
   - Lixeira do Windows.
@@ -44,13 +44,11 @@ O fluxo de uso foi pensado para ser o mais simples possível:
 2.  **Tela de Confirmação**: Uma janela personalizada e bonita informa ao usuário sobre a operação que será realizada, pedindo a confirmação para prosseguir.
 3.  **Limpeza Automatizada**: Após a confirmação, a janela de progresso aparece e executa todas as etapas de limpeza de forma automática.
 4.  **Acompanhamento em Tempo Real**: O usuário vê exatamente o que está sendo limpo, o espaço que está sendo liberado e quanto tempo falta.
-5.  **Relatório Final**: Ao concluir, um relatório detalhado é exibido, permitindo ao usuário verificar o sucesso da operação.
+5.  **Relatório Final**: Ao concluir, um relatório detalhado é exibido, permitindo ao usuário verificar o sucesso da operação podendo salvar o resultado.
 
 ---
 
 ##  Screenshots
-
-*(Adicione aqui algumas imagens da interface do seu script para deixar o README mais visual)*
 
 > **Dica**: Para adicionar screenshots, hospede as imagens em um serviço como o Imgur e cole o link no formato abaixo:
 > `![Tela de Confirmação](https://i.imgur.com/SUA_IMAGEM_1.png)`
