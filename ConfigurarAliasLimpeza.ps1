@@ -9,14 +9,14 @@ Write-Host ""
 
 Write-Host " [1/3] Verificando a política de execução do PowerShell..." -ForegroundColor Yellow
 
- $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
+$currentPolicy = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
 
 if ($currentPolicy -eq 'Restricted') {
     Write-Host "   Política 'Restricted' detectada. Alterando para 'RemoteSigned'..." -ForegroundColor Yellow
     Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-    Write-Host "   ✅ Política de execução alterada com sucesso!" -ForegroundColor Green
+    Write-Host "    Política de execução alterada com sucesso!" -ForegroundColor Green
 } else {
-    Write-Host "   ✅ Política de execução já está configurada como '$currentPolicy'." -ForegroundColor Green
+    Write-Host "    Política de execução já está configurada como '$currentPolicy'." -ForegroundColor Green
 }
 Write-Host ""
 
@@ -29,20 +29,20 @@ if (-not (Test-Path $PROFILE)) {
     New-Item -Path $PROFILE -ItemType File -Force | Out-Null
 }
 
- $functionCode = @'
+$functionCode = @'
 
 # Função e Alias para a Limpeza Avançada by EdyOne
 function LimpezaAvancada {
-    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/LimpezaAvancada.ps1" | iex
+    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1" | iex
 }
 
 Set-Alias -Name limpeza -Value LimpezaAvancada
 '@
 
- $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+$profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
 if ($profileContent -notmatch 'Set-Alias -Name limpeza') {
     Add-Content -Path $PROFILE -Value $functionCode
-    Write-Host "   ✅ Alias 'limpeza' adicionado ao perfil com sucesso!" -ForegroundColor Green
+    Write-Host "    Alias 'limpeza' adicionado ao perfil com sucesso!" -ForegroundColor Green
 } else {
     Write-Host "   (!) Alias 'limpeza' já existe no seu perfil. Nenhuma alteração necessária." -ForegroundColor Cyan
 }
@@ -52,23 +52,22 @@ Write-Host ""
 
 Write-Host " [3/3] Criando atalho na área de trabalho..." -ForegroundColor Yellow
 
- $desktopPath = [System.Environment]::GetFolderPath('Desktop')
- $shortcutPath = Join-Path $desktopPath "Limpeza Avançada.lnk"
+$desktopPath = [System.Environment]::GetFolderPath('Desktop')
+$shortcutPath = Join-Path $desktopPath "Limpeza Avançada.lnk"
 
- $shell = New-Object -ComObject WScript.Shell
- $shortcut = $shell.CreateShortcut($shortcutPath)
+$shell = New-Object -ComObject WScript.Shell
+$shortcut = $shell.CreateShortcut($shortcutPath)
 
-# O atalho chama o ALIAS 'limpeza' em uma nova instância do PowerShell.
-# Isso garante que ele sempre use a versão mais recente definida no perfil.
- $shortcut.TargetPath = "powershell.exe"
- $shortcut.Arguments = "-NoProfile -Command `"limpeza`""
- $shortcut.WorkingDirectory = "%windir%"
- $shortcut.Description = "Executa a Limpeza Avançada do Windows by EdyOne"
- $shortcut.IconLocation = "powershell.exe, 0"
+# Remove -NoProfile e eleva como Admin automaticamente
+$shortcut.TargetPath = "powershell.exe"
+$shortcut.Arguments = "-ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -ArgumentList '-ExecutionPolicy Bypass -Command limpeza'`""
+$shortcut.WorkingDirectory = "%windir%"
+$shortcut.Description = "Executa a Limpeza Avançada do Windows by EdyOne"
+$shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll, 266"
 
- $shortcut.Save()
+$shortcut.Save()
 
-Write-Host "   ✅ Atalho criado com sucesso em: $shortcutPath" -ForegroundColor Green
+Write-Host " Atalho criado com sucesso em: $shortcutPath" -ForegroundColor Green
 Write-Host ""
 
 # --- Finalização e Instruções ---
@@ -83,5 +82,13 @@ Write-Host "   Abra uma NOVA janela do PowerShell e digite:" -ForegroundColor Gr
 Write-Host "   limpeza" -ForegroundColor Yellow -BackgroundColor DarkGray
 Write-Host ""
 Write-Host "2. PELA ÁREA DE TRABALHO:" -ForegroundColor White
-Write-Host "   Apenas dê um duplo-clique no ícone 'Limpeza Avançada'." -ForegroundColor Gray
+Write-Host "   Dê um duplo-clique no ícone 'Limpeza Avançada' 🪄" -ForegroundColor Gray
+Write-Host "   (O atalho pedirá permissões de Administrador automaticamente)" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "===========================================================" -ForegroundColor Cyan
+Write-Host " NOTAS IMPORTANTES:" -ForegroundColor Yellow
+Write-Host "===========================================================" -ForegroundColor Cyan
+Write-Host "• O alias 'limpeza' só funciona em NOVAS janelas do PowerShell" -ForegroundColor Gray
+Write-Host "• O atalho sempre baixa a versão mais recente do GitHub" -ForegroundColor Gray
+Write-Host "• Sempre execute como Administrador para limpeza completa" -ForegroundColor Gray
 Write-Host ""
