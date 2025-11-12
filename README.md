@@ -11,6 +11,30 @@ Uma programa desenvolvido em PowerShell para realizar uma limpeza profunda e oti
 
 ---
 
+##  Instalação Rápida (Recomendado)
+
+Para usar a Limpeza Avançada de forma prática e recorrente, execute o comando abaixo **uma única vez**. Ele irá configurar tudo para você, criando um **atalho na área de trabalho** e um **comando de atalho** no PowerShell.
+
+### Passos para Instalar
+
+1.  Abra o **PowerShell como Administrador**.
+    - Clique no menu Iniciar, digite "PowerShell", clique com o botão direito em "Windows PowerShell" e selecione **"Executar como administrador"**.
+
+2.  Copie e cole o comando abaixo e pressione **Enter**:
+
+    ```powershell
+    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/Instalar/ConfigurarAliasLimpeza.ps1" | iex
+    ```
+
+### Pronto! Agora você tem duas formas de executar:
+
+- **Pela Área de Trabalho**: Basta dar um duplo-clique no ícone **"Limpeza Avançada by EdyOne"**.
+- **Pelo Terminal**: Abra uma nova janela do PowerShell e digite `limpeza`.
+
+> ** Nota de Segurança**: Execute o comando `irm ... | iex` apenas de fontes que você confia. Neste caso, você está confiando neste repositório oficial.
+
+---
+
 ## Sobre o Projeto
 
 Manter o Windows limpo e otimizado é essencial para garantir um desempenho rápido, estabilidade e mais espaço de armazenamento. Com o tempo, arquivos temporários, caches de navegadores, logs do sistema e outros dados desnecessários se acumulam, deixando o computador lento.
