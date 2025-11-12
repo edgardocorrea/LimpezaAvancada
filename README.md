@@ -106,7 +106,7 @@ Siga estes passos simples para executar a limpeza:
 
 ## Informações Técnicas
 
-- **Versão**: 2.1 - Edição Avançada
+- **Versão**: 3 - Edição Avançada
 - **Linguagem**: PowerShell (.ps1)
 - **Framework**: .NET (para a interface gráfica com Windows Forms)
 - **Dependências**: Robocopy (nativo do Windows)
