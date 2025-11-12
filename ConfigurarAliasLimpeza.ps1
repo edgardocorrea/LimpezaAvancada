@@ -33,7 +33,7 @@ $functionCode = @'
 
 # Função e Alias para a Limpeza Avançada by EdyOne
 function LimpezaAvancada {
-    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1" | iex
+    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/LimpezaAvancada.ps1" | iex
 }
 
 Set-Alias -Name limpeza -Value LimpezaAvancada
