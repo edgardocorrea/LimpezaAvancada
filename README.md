@@ -23,12 +23,12 @@ Para usar a Limpeza Avançada de forma prática e recorrente, execute o comando 
 2.  Copie e cole o comando abaixo e pressione **Enter**:
 
     ```powershell
-    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/Instalar/ConfigurarAliasLimpeza.ps1" | iex
+    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/Instalar/ConfigurarAliasLimpeza.ps1" | iex
     ```
 
 ### Pronto! Agora você tem duas formas de executar:
 
-- **Pela Área de Trabalho**: Basta dar um duplo-clique no ícone **"Limpeza Avançada"**.
+- **Pela Área de Trabalho**: Basta dar um duplo-clique no ícone **"Limpeza Avançada by EdyOne"**.
 - **Pelo Terminal**: Abra uma nova janela do PowerShell e digite `limpeza`.
 
 > ** Nota de Segurança**: Execute o comando `irm ... | iex` apenas de fontes que você confia. Neste caso, você está confiando neste repositório oficial.
@@ -106,7 +106,7 @@ Siga estes passos simples para executar a limpeza:
 
 ## Informações Técnicas
 
-- **Versão**: 3 - Edição Avançada
+- **Versão**: 2.1 - Edição Avançada
 - **Linguagem**: PowerShell (.ps1)
 - **Framework**: .NET (para a interface gráfica com Windows Forms)
 - **Dependências**: Robocopy (nativo do Windows)
