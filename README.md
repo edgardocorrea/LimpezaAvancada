@@ -28,7 +28,7 @@ Para usar a Limpeza Avançada de forma prática e recorrente, execute o comando 
 
 ### Pronto! Agora você tem duas formas de executar:
 
-- **Pela Área de Trabalho**: Basta dar um duplo-clique no ícone **"Limpeza Avançada by EdyOne"**.
+- **Pela Área de Trabalho**: Basta dar um duplo-clique no ícone **"Limpeza Avançada"**.
 - **Pelo Terminal**: Abra uma nova janela do PowerShell e digite `limpeza`.
 
 > ** Nota de Segurança**: Execute o comando `irm ... | iex` apenas de fontes que você confia. Neste caso, você está confiando neste repositório oficial.
