@@ -63,9 +63,9 @@ $shortcutPath = Join-Path $desktopPath "Limpeza Avançada.lnk"
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
 
-# ✅ CORRIGIDO: Chama o script direto da URL com elevação de Admin
+# ✅ CORRIGIDO: Oculta a janela do PowerShell durante execução
 $shortcut.TargetPath = "powershell.exe"
-$shortcut.Arguments = "-NoExit -ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -ArgumentList '-ExecutionPolicy Bypass -Command `$script = irm https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1; iex `$script'`""
+$shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -Command `$script = Invoke-RestMethod https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1; Invoke-Expression `$script'`""
 $shortcut.WorkingDirectory = "%windir%"
 $shortcut.Description = "Executa a Limpeza Avançada do Windows by EdyOne"
 $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll, 266"
@@ -88,7 +88,7 @@ Write-Host "   limpeza" -ForegroundColor Yellow -BackgroundColor DarkGray
 Write-Host ""
 Write-Host "2. PELA ÁREA DE TRABALHO:" -ForegroundColor White
 Write-Host "   Dê um duplo-clique no ícone 'Limpeza Avançada' 🪄" -ForegroundColor Gray
-Write-Host "   (O atalho pedirá permissões de Administrador automaticamente)" -ForegroundColor DarkGray
+Write-Host "   (Abre direto a interface gráfica, minimizando janelas extras)" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "===========================================================" -ForegroundColor Cyan
 Write-Host " NOTAS IMPORTANTES:" -ForegroundColor Yellow
@@ -96,6 +96,5 @@ Write-Host "===========================================================" -Foregr
 Write-Host "• O alias 'limpeza' só funciona em NOVAS janelas do PowerShell" -ForegroundColor Gray
 Write-Host "• Execute sempre como Administrador para limpeza completa" -ForegroundColor Gray
 Write-Host "• O script sempre baixa a versão mais recente do GitHub" -ForegroundColor Gray
-Write-Host ""
-Write-Host "Caso o alias não funcione imediatamente, feche e reabra o PowerShell." -ForegroundColor DarkYellow
+Write-Host "• A janela do PowerShell fica oculta durante a execução" -ForegroundColor Gray
 Write-Host ""
