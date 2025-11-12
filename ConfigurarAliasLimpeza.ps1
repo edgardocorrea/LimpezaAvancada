@@ -14,9 +14,9 @@ $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyCon
 if ($currentPolicy -eq 'Restricted') {
     Write-Host "   Política 'Restricted' detectada. Alterando para 'RemoteSigned'..." -ForegroundColor Yellow
     Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-    Write-Host "    Política de execução alterada com sucesso!" -ForegroundColor Green
+    Write-Host "   ✅ Política de execução alterada com sucesso!" -ForegroundColor Green
 } else {
-    Write-Host "    Política de execução já está configurada como '$currentPolicy'." -ForegroundColor Green
+    Write-Host "   ✅ Política de execução já está configurada como '$currentPolicy'." -ForegroundColor Green
 }
 Write-Host ""
 
@@ -26,6 +26,10 @@ Write-Host " [2/3] Configurando o alias 'limpeza' no seu perfil do PowerShell...
 
 if (-not (Test-Path $PROFILE)) {
     Write-Host "   Arquivo de perfil não encontrado. Criando um novo em: $PROFILE" -ForegroundColor Yellow
+    $profileDir = Split-Path $PROFILE -Parent
+    if (-not (Test-Path $profileDir)) {
+        New-Item -Path $profileDir -ItemType Directory -Force | Out-Null
+    }
     New-Item -Path $PROFILE -ItemType File -Force | Out-Null
 }
 
@@ -33,7 +37,8 @@ $functionCode = @'
 
 # Função e Alias para a Limpeza Avançada by EdyOne
 function LimpezaAvancada {
-    irm "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/LimpezaAvancada.ps1" | iex
+    $script = Invoke-RestMethod "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1"
+    Invoke-Expression $script
 }
 
 Set-Alias -Name limpeza -Value LimpezaAvancada
@@ -42,7 +47,7 @@ Set-Alias -Name limpeza -Value LimpezaAvancada
 $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
 if ($profileContent -notmatch 'Set-Alias -Name limpeza') {
     Add-Content -Path $PROFILE -Value $functionCode
-    Write-Host "    Alias 'limpeza' adicionado ao perfil com sucesso!" -ForegroundColor Green
+    Write-Host "   ✅ Alias 'limpeza' adicionado ao perfil com sucesso!" -ForegroundColor Green
 } else {
     Write-Host "   (!) Alias 'limpeza' já existe no seu perfil. Nenhuma alteração necessária." -ForegroundColor Cyan
 }
@@ -58,16 +63,16 @@ $shortcutPath = Join-Path $desktopPath "Limpeza Avançada.lnk"
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
 
-# Remove -NoProfile e eleva como Admin automaticamente
+# ✅ CORRIGIDO: Chama o script direto da URL com elevação de Admin
 $shortcut.TargetPath = "powershell.exe"
-$shortcut.Arguments = "-ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -ArgumentList '-ExecutionPolicy Bypass -Command limpeza'`""
+$shortcut.Arguments = "-NoExit -ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -ArgumentList '-ExecutionPolicy Bypass -Command `$script = irm https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1; iex `$script'`""
 $shortcut.WorkingDirectory = "%windir%"
 $shortcut.Description = "Executa a Limpeza Avançada do Windows by EdyOne"
 $shortcut.IconLocation = "%SystemRoot%\System32\shell32.dll, 266"
 
 $shortcut.Save()
 
-Write-Host " Atalho criado com sucesso em: $shortcutPath" -ForegroundColor Green
+Write-Host "   ✅ Atalho criado com sucesso em: $shortcutPath" -ForegroundColor Green
 Write-Host ""
 
 # --- Finalização e Instruções ---
@@ -78,7 +83,7 @@ Write-Host ""
 Write-Host "Você agora tem DUAS formas de executar a limpeza:" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "1. NO TERMINAL (PowerShell):" -ForegroundColor White
-Write-Host "   Abra uma NOVA janela do PowerShell e digite:" -ForegroundColor Gray
+Write-Host "   Abra uma NOVA janela do PowerShell como Administrador e digite:" -ForegroundColor Gray
 Write-Host "   limpeza" -ForegroundColor Yellow -BackgroundColor DarkGray
 Write-Host ""
 Write-Host "2. PELA ÁREA DE TRABALHO:" -ForegroundColor White
@@ -89,6 +94,8 @@ Write-Host "===========================================================" -Foregr
 Write-Host " NOTAS IMPORTANTES:" -ForegroundColor Yellow
 Write-Host "===========================================================" -ForegroundColor Cyan
 Write-Host "• O alias 'limpeza' só funciona em NOVAS janelas do PowerShell" -ForegroundColor Gray
-Write-Host "• O atalho sempre baixa a versão mais recente do GitHub" -ForegroundColor Gray
-Write-Host "• Sempre execute como Administrador para limpeza completa" -ForegroundColor Gray
+Write-Host "• Execute sempre como Administrador para limpeza completa" -ForegroundColor Gray
+Write-Host "• O script sempre baixa a versão mais recente do GitHub" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Caso o alias não funcione imediatamente, feche e reabra o PowerShell." -ForegroundColor DarkYellow
 Write-Host ""
