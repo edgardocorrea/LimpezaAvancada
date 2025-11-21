@@ -1,4 +1,4 @@
-# --- Início da Instalação ---
+# --- Início da Instalação --
 
 Write-Host "===========================================================" -ForegroundColor Cyan
 Write-Host "  Instalação Completa - Limpeza Avançada by EdyOne" -ForegroundColor White
