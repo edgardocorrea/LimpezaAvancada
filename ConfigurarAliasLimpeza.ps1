@@ -63,11 +63,11 @@ try {
 
 # Configura as propriedades do atalho.
  $shortcut.TargetPath = "powershell.exe"
- $shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -Command `$script = Invoke-RestMethod https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1; Invoke-Expression `$script'`""
+ $shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -Command `$script = Invoke-RestMethod https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/Instalar/LimpezaAvancada.ps1; Invoke-Expression `$script'`""
  $shortcut.WorkingDirectory = "%windir%"
  $shortcut.Description = "Executa a Limpeza Avançada do Windows by EdyOne"
 # Define o local do ícone para o nosso ícone personalizado baixado.
- $shortcut.IconLocation = "`"$iconLocalPath`", 0"
+ $shortcut.IconLocation = "$iconLocalPath,0"
 
 # Salva o atalho na área de trabalho.
  $shortcut.Save()
