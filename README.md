@@ -75,9 +75,9 @@ O fluxo de uso foi pensado para ser o mais simples possível:
 ##  Screenshots
 
 > **Dica**: Para adicionar screenshots, hospede as imagens em um serviço como o Imgur e cole o link no formato abaixo:
-> `![Tela de Confirmação](/imagem/limpeza_1.png)`
-> `![Barra de Progresso](/imagem/limpeza_2.png)`
-> `![Relatório Final](/imagem/limpeza_3.png)`
+> `![Tela de Confirmação](/imagem/limpeza_1.jpg)`
+> `![Barra de Progresso](/imagem/limpeza_2.jpg)`
+> `![Relatório Final](/imagem/limpeza_3.jpg)`
 
 ---
 
