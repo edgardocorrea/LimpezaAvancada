@@ -75,9 +75,12 @@ O fluxo de uso foi pensado para ser o mais simples possível:
 ##  Screenshots
 
 > **Imagem**:
-> `![Tela de Confirmação](imagem/limpeza_1.jpg)`
-> `![Barra de Progresso](/imagem/limpeza_2.jpg)`
-> `![Relatório Final](/imagem/limpeza_3.jpg)`
+
+![Tela de Confirmação](https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/main/imagem/limpeza_1.jpg)
+
+![Barra de Progresso](https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/main/imagem/limpeza_2.jpg)
+
+![Relatório Final](https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/main/imagem/limpeza_3.jpg)
 
 ---
 
