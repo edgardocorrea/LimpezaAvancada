@@ -109,10 +109,13 @@ Siga estes passos simples para executar a limpeza:
 
 ## Informações Técnicas
 
-- **Versão**: 2.1 - Edição Avançada
 - **Linguagem**: PowerShell (.ps1)
 - **Framework**: .NET (para a interface gráfica com Windows Forms)
 - **Dependências**: Robocopy (nativo do Windows)
+
+##  Changelog
+
+Para ver o histórico detalhado de mudanças, correções e novas funcionalidades de cada versão, consulte o arquivo **[CHANGELOG.md](CHANGELOG.md)**.
 
 ---
 
