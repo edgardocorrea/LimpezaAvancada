@@ -34,12 +34,10 @@ Write-Host " [2/2] Configurando o atalho na área de trabalho..." -ForegroundCol
 # --- NOVA FUNCIONALIDADE: Download do Ícone Personalizado ---
 Write-Host "   Baixando ícone personalizado..." -ForegroundColor Yellow
 
-# Define a URL do ícone no seu repositório GitHub. **IMPORTANTE:** Verifique se o nome do arquivo está correto.
-# URL ATUALIZADA conforme solicitado.
+# Define a URL do ícone no seu repositório GitHub.
  $iconUrl = "https://github.com/edgardocorrea/LimpezaAvancada/raw/refs/heads/main/icone.ico"
 
 # Define um caminho local para salvar o ícone, dentro da pasta de dados locais do usuário.
-# Isso evita problemas de permissão e mantém o ícone disponível mesmo se o script for movido.
  $iconLocalPath = "$env:LOCALAPPDATA\LimpezaAvancada\icone.ico"
  $iconDir = Split-Path $iconLocalPath -Parent
 
@@ -48,7 +46,7 @@ if (-not (Test-Path $iconDir)) {
     New-Item -Path $iconDir -ItemType Directory -Force | Out-Null
 }
 
-# Baixa o ícone da URL e o salva no caminho local. O -ErrorAction Stop garante que o script pare se o download falhar.
+# Baixa o ícone da URL e o salva no caminho local.
 try {
     Invoke-WebRequest -Uri $iconUrl -OutFile $iconLocalPath -ErrorAction Stop
     Write-Host "   ✅ Ícone baixado com sucesso para: $iconLocalPath" -ForegroundColor Green
@@ -64,7 +62,6 @@ try {
  $shortcut = $shell.CreateShortcut($shortcutPath)
 
 # Configura as propriedades do atalho.
-# Oculta a janela do PowerShell, define a política de bypass e executa o script do GitHub com privilégios de administrador.
  $shortcut.TargetPath = "powershell.exe"
  $shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -Command `"Start-Process powershell -Verb RunAs -WindowStyle Hidden -ArgumentList '-ExecutionPolicy Bypass -Command `$script = Invoke-RestMethod https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/refs/heads/main/LimpezaAvancada.ps1; Invoke-Expression `$script'`""
  $shortcut.WorkingDirectory = "%windir%"
@@ -76,6 +73,34 @@ try {
  $shortcut.Save()
 
 Write-Host "   ✅ Atalho criado com sucesso em: $shortcutPath" -ForegroundColor Green
+
+# --- ALTERAÇÃO: Forçar atualização dos ícones da área de trabalho ---
+Write-Host "   Atualizando os ícones da área de trabalho..." -ForegroundColor Yellow
+try {
+    # Define o código C# para chamar a API nativa do Windows
+    $signature = @"
+    using System;
+    using System.Runtime.InteropServices;
+    public class DesktopRefresh {
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessageTimeout(
+            IntPtr hWnd, uint Msg, IntPtr wParam, string lParam,
+            uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
+        public static void Refresh() {
+            // Envia uma mensagem de que as configurações do ambiente mudaram
+            SendMessageTimeout(new IntPtr(0xFFFF), 0x1A, IntPtr.Zero, "Environment", 0, 100, out IntPtr result);
+        }
+    }
+"@
+    # Adiciona o código C# à sessão atual do PowerShell
+    Add-Type -TypeDefinition $signature -ErrorAction Stop
+    # Executa a função de atualização
+    [DesktopRefresh]::Refresh()
+    Write-Host "   ✅ Ícones da área de trabalho atualizados." -ForegroundColor Green
+} catch {
+    Write-Host "   (!) Não foi possível atualizar os ícones automaticamente. Tente atualizar a área de trabalho manualmente (tecla F5)." -ForegroundColor Yellow
+}
+
 Write-Host ""
 
 # --- BLOCO 3: FINALIZAÇÃO E INSTRUÇÕES AO USUÁRIO ---
@@ -94,3 +119,4 @@ Write-Host "===========================================================" -Foregr
 Write-Host "• Execute sempre como Administrador para uma limpeza completa." -ForegroundColor Gray
 Write-Host "• A janela do PowerShell fica oculta durante a execução." -ForegroundColor Gray
 Write-Host "• Um ícone personalizado foi baixado para o atalho." -ForegroundColor Gray
+Write-Host "• Se o ícone não aparecer, pressione F5 na área de trabalho." -ForegroundColor Gray
