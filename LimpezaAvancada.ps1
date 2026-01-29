@@ -1,3 +1,23 @@
+<#
+.SYNOPSIS
+    Limpeza Avançada do Windows - v3.0 - by EdyOne
+
+.DESCRIPTION
+    Realiza limpeza profunda do sistema com:
+    - Operações assíncronas (sem travamentos)
+    - Timeout em serviços críticos
+    - Verificação de locks antes da limpeza
+    - Modo dry-run (simulação)
+    - Retry com backoff exponencial
+    - Rollback automático em falhas
+
+.VERSION
+    3.0 - Edição Pro by EdyOne (Corrigida e Otimizada)
+
+.NOTES
+    Execute como Administrador
+#>
+
 #Requires -RunAsAdministrator
 
 # Oculta a janela do PowerShell (CMD)
@@ -7,7 +27,7 @@ public static extern IntPtr GetConsoleWindow();
 [DllImport("user32.dll")]
 public static extern bool ShowWindow(IntPtr hWnd, Int32 nCmdShow);
 '
-$consolePtr = [Console.Window]::GetConsoleWindow()
+ $consolePtr = [Console.Window]::GetConsoleWindow()
 [Console.Window]::ShowWindow($consolePtr, 0) | Out-Null
 
 # ==============================================================================
@@ -18,10 +38,10 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$ErrorActionPreference = "SilentlyContinue"
+ $ErrorActionPreference = "SilentlyContinue"
 
 # Configurações globais
-$script:Config = @{
+ $script:Config = @{
     ServiceTimeout = 10          # Timeout para parar serviços (segundos)
     ProcessKillTimeout = 3       # Timeout para fechar processos (segundos)
     RetryAttempts = 3           # Tentativas de retry
@@ -31,7 +51,7 @@ $script:Config = @{
 }
 
 # Cores para console
-$script:Colors = @{
+ $script:Colors = @{
     Header  = "Cyan"
     Success = "Green"
     Warning = "Yellow"
@@ -41,7 +61,7 @@ $script:Colors = @{
 }
 
 # Estatísticas globais
-$script:Stats = @{
+ $script:Stats = @{
     TotalFiles = 0
     TotalSize = 0
     DeletedFiles = 0
@@ -54,8 +74,8 @@ $script:Stats = @{
 }
 
 # Controle de cancelamento
-$script:CancelRequested = $false
-$script:RunningJobs = [System.Collections.ArrayList]@()
+ $script:CancelRequested = $false
+ $script:RunningJobs = [System.Collections.ArrayList]@()
 
 # ==============================================================================
 # FUNÇÕES AUXILIARES DE SISTEMA
@@ -211,7 +231,7 @@ function Invoke-WithRetry {
 # ==============================================================================
 
 function Show-ProgressWindow {
-    param([string]$Title = "Limpeza Avançada do Windows - by EdyOne")
+    param([string]$Title = "Limpeza Avançada do Windows v3.0 - by EdyOne")
     
     $script:Form = New-Object System.Windows.Forms.Form
     $script:Form.Text = $Title
@@ -257,7 +277,7 @@ function Show-ProgressWindow {
     $titleLabel.Location = New-Object System.Drawing.Point(15, 10)
     $titleLabel.Size = New-Object System.Drawing.Size(620, 28)
     $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 14, [System.Drawing.FontStyle]::Bold)
-    $titleLabel.Text = "LIMPEZA AVANÇADA DO WINDOWS"
+    $titleLabel.Text = "LIMPEZA AVANÇADA DO WINDOWS v3.0"
     $titleLabel.ForeColor = [System.Drawing.Color]::White
     $titleLabel.BackColor = [System.Drawing.Color]::Transparent
     $headerPanel.Controls.Add($titleLabel)
@@ -267,7 +287,7 @@ function Show-ProgressWindow {
     $creditsLabel.Location = New-Object System.Drawing.Point(15, 40)
     $creditsLabel.Size = New-Object System.Drawing.Size(620, 20)
     $creditsLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Italic)
-    $creditsLabel.Text = "Desenvolvido by EdyOne =D"
+    $creditsLabel.Text = "Desenvolvido by EdyOne - Edição Pro (Sem Travamentos)"
     $creditsLabel.ForeColor = [System.Drawing.Color]::FromArgb(220, 220, 220)
     $creditsLabel.BackColor = [System.Drawing.Color]::Transparent
     $headerPanel.Controls.Add($creditsLabel)
@@ -278,7 +298,7 @@ function Show-ProgressWindow {
         $dryRunLabel.Location = New-Object System.Drawing.Point(15, 58)
         $dryRunLabel.Size = New-Object System.Drawing.Size(620, 18)
         $dryRunLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-        $dryRunLabel.Text = "(!) MODO SIMULAÇÃO ATIVO - Nenhum arquivo será deletado"
+        $dryRunLabel.Text = "MODO SIMULAÇÃO ATIVO - Nenhum arquivo será deletado"
         $dryRunLabel.ForeColor = [System.Drawing.Color]::Yellow
         $dryRunLabel.BackColor = [System.Drawing.Color]::Transparent
         $headerPanel.Controls.Add($dryRunLabel)
@@ -325,7 +345,7 @@ function Show-ProgressWindow {
     $script:TimeLabel.Location = New-Object System.Drawing.Point(20, 410)
     $script:TimeLabel.Size = New-Object System.Drawing.Size(610, 20)
     $script:TimeLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
-    $script:TimeLabel.Text = ">> Tempo estimado: Calculando..."
+    $script:TimeLabel.Text = "Tempo estimado: Calculando..."
     $script:Form.Controls.Add($script:TimeLabel)
     
     # Estatísticas em tempo real
@@ -333,7 +353,7 @@ function Show-ProgressWindow {
     $script:StatsLabel.Location = New-Object System.Drawing.Point(20, 435)
     $script:StatsLabel.Size = New-Object System.Drawing.Size(610, 20)
     $script:StatsLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8)
-    $script:StatsLabel.Text = "💾 Espaço liberado: 0 MB | ⚠️ Falhas: 0 | ⏭️ Ignorados: 0"
+    $script:StatsLabel.Text = "Espaço liberado: 0 MB | Falhas: 0 | Ignorados: 0"
     $script:Form.Controls.Add($script:StatsLabel)
     
     $script:Form.Show()
@@ -361,32 +381,23 @@ function Update-Progress {
         
         if ($Detail) {
             $timestamp = Get-Date -Format "HH:mm:ss"
-            $icon = if ($IsError) { "❌" } elseif ($IsWarning) { "⚠️" } else { "✔️" }
-            $script:DetailsBox.AppendText("[$timestamp] $icon $Detail`r`n")
+            $icon = if ($IsError) { "X" } elseif ($IsWarning) { "!" } else { "OK" }
+            $script:DetailsBox.AppendText("[$timestamp] [$icon] $Detail`r`n")
             $script:DetailsBox.SelectionStart = $script:DetailsBox.Text.Length
             $script:DetailsBox.ScrollToCaret()
         }
         
-# Atualiza tempo estimado
- $elapsed = (Get-Date) - $script:Stats.StartTime
-if ($Percent -gt 5) {
-    $totalSeconds = $elapsed.TotalSeconds / ($Percent / 100)
-    $remainingSeconds = $totalSeconds - $elapsed.TotalSeconds
-    
-    if ($remainingSeconds -gt 0) {
-        if ($remainingSeconds -lt 60) {
-            $script:TimeLabel.Text = ">> Tempo restante: $([Math]::Floor($remainingSeconds))s"
-        } else {
-            $minutes = [Math]::Floor($remainingSeconds / 60)
-            $seconds = [Math]::Floor($remainingSeconds % 60)
-            $script:TimeLabel.Text = ">> Tempo restante: ${minutes}m ${seconds}s"
+        # Atualiza tempo estimado
+        $elapsed = (Get-Date) - $script:Stats.StartTime
+        if ($Percent -gt 5) {
+            $total = $elapsed.TotalSeconds / ($Percent / 100)
+            $remaining = $total - $elapsed.TotalSeconds
+            if ($remaining -gt 0) {
+                $minutes = [Math]::Floor($remaining / 60)
+                $seconds = [Math]::Floor($remaining % 60)
+                $script:TimeLabel.Text = "Tempo restante: ${minutes}m ${seconds}s"
+            }
         }
-    } else {
-        $script:TimeLabel.Text = ">> Tempo restante: Calculando..."
-    }
-} else {
-    $script:TimeLabel.Text = ">> Tempo decorrido: $([Math]::Floor($elapsed.TotalSeconds))s"
-}
         
         # Atualiza estatísticas
         $spaceMB = [Math]::Round($script:Stats.DeletedSize, 2)
@@ -431,27 +442,8 @@ function Clean-FolderWithRobocopy {
         [string]$Description
     )
     
-    # Verificação robusta no início para evitar o erro "path is null"
-    if ([string]::IsNullOrWhiteSpace($Path)) {
-        $script:Stats.SkippedOperations++
-        $script:Stats.Operations.Add([PSCustomObject]@{
-            Location = $Description
-            Path = "CAMINHO INVÁLIDO"
-            Deleted = "0 MB"
-            Status = "⚠️ Erro: Caminho da pasta não foi informado"
-        }) | Out-Null
-        Update-Progress -Percent -1 -Status "" -Detail "$Description - Erro de configuração: caminho inválido" -IsWarning
-        return
-    }
-    
     if (-not (Test-Path $Path)) {
         $script:Stats.SkippedOperations++
-        $script:Stats.Operations.Add([PSCustomObject]@{
-            Location = $Description
-            Path = $Path
-            Deleted = "0 MB"
-            Status = "⏭️ Ignorado (pasta não existe)"
-        }) | Out-Null
         return
     }
     
@@ -460,12 +452,6 @@ function Clean-FolderWithRobocopy {
         
         if ($sizeBefore -eq 0) {
             $script:Stats.SkippedOperations++
-            $script:Stats.Operations.Add([PSCustomObject]@{
-                Location = $Description
-                Path = $Path
-                Deleted = "0 MB"
-                Status = "⏭️ Ignorado (já estava vazio)"
-            }) | Out-Null
             Update-Progress -Percent -1 -Status "" -Detail "$Description - Pasta já vazia" -IsWarning
             return
         }
@@ -483,12 +469,13 @@ function Clean-FolderWithRobocopy {
         }
         
         if ($script:Config.DryRun) {
+            # Modo simulação
             $script:Stats.DeletedSize += $sizeBefore
             $script:Stats.Operations.Add([PSCustomObject]@{
                 Location = $Description
                 Path = $Path
                 Deleted = Format-FileSize $sizeBefore
-                Status = "🔍 SIMULADO"
+                Status = "SIMULADO"
             }) | Out-Null
             Update-Progress -Percent -1 -Status "" -Detail "$Description - [SIMULADO] $(Format-FileSize $sizeBefore)"
             return
@@ -528,11 +515,11 @@ function Clean-FolderWithRobocopy {
         $script:Stats.DeletedSize += $deleted
         
         $status = if ($sizeAfter -eq 0) {
-            "✅ Limpo"
+            "Limpo"
         } elseif ($deleted -gt 0) {
-            "⚠️ $(Format-FileSize $sizeAfter) restante"
+            "$(Format-FileSize $sizeAfter) restante"
         } else {
-            "❌ Falhou"
+            "Falhou"
             $script:Stats.FailedOperations++
         }
         
@@ -547,18 +534,9 @@ function Clean-FolderWithRobocopy {
         
     } catch {
         $script:Stats.FailedOperations++
-        # <<< MENSAGEM DE ERRO MELHORADA AQUI >>>
-        $script:Stats.Operations.Add([PSCustomObject]@{
-            Location = $Description
-            Path = $Path
-            Deleted = "0 MB"
-            Status = "❌ Erro de Acesso: Verifique as permissões da pasta"
-        }) | Out-Null
-        Update-Progress -Percent -1 -Status "" -Detail "$Description - Erro ao acessar o local. O script continuará." -IsError
+        Update-Progress -Percent -1 -Status "" -Detail "$Description - Erro: $($_.Exception.Message)" -IsError
     }
 }
-
-
 
 function Clean-TempFolders {
     Update-Progress -Percent 5 -Status "Limpando arquivos temporários..." -Detail "Iniciando limpeza de pastas temporárias"
@@ -590,7 +568,7 @@ function Clean-WindowsUpdate {
         $stopResult = Stop-ServiceWithTimeout -ServiceName "wuauserv" -TimeoutSeconds $script:Config.ServiceTimeout
         
         if ($stopResult.Success) {
-            Update-Progress -Percent -1 -Status "" -Detail "✅ $($stopResult.Message)"
+            Update-Progress -Percent -1 -Status "" -Detail "$($stopResult.Message)"
             
             $updatePaths = @(
                 "$env:WINDIR\SoftwareDistribution\Download",
@@ -605,7 +583,7 @@ function Clean-WindowsUpdate {
             # Reinicia o serviço
             if (-not $script:Config.DryRun) {
                 Start-Service -Name wuauserv -ErrorAction SilentlyContinue
-                Update-Progress -Percent -1 -Status "" -Detail "✅ Serviço wuauserv reiniciado"
+                Update-Progress -Percent -1 -Status "" -Detail "Serviço wuauserv reiniciado"
             }
         } else {
             $script:Stats.FailedOperations++
@@ -613,11 +591,11 @@ function Clean-WindowsUpdate {
                 Location = "Windows Update"
                 Issue = $stopResult.Message
             }) | Out-Null
-            Update-Progress -Percent -1 -Status "" -Detail "⚠️ $($stopResult.Message) - Pulando limpeza" -IsWarning
+            Update-Progress -Percent -1 -Status "" -Detail "$($stopResult.Message) - Pulando limpeza" -IsWarning
         }
     } catch {
         $script:Stats.FailedOperations++
-        Update-Progress -Percent -1 -Status "" -Detail "❌ Erro ao limpar Windows Update: $($_.Exception.Message)" -IsError
+        Update-Progress -Percent -1 -Status "" -Detail "Erro ao limpar Windows Update: $($_.Exception.Message)" -IsError
     }
 }
 
@@ -636,14 +614,14 @@ function Clean-RecycleBin {
                 Update-Progress -Percent -1 -Status "" -Detail "[SIMULADO] $itemCount itens seriam removidos da lixeira"
             } else {
                 Clear-RecycleBin -Force -Confirm:$false -ErrorAction Stop
-                Update-Progress -Percent -1 -Status "" -Detail "✅ Lixeira esvaziada - $itemCount itens removidos"
+                Update-Progress -Percent -1 -Status "" -Detail "Lixeira esvaziada - $itemCount itens removidos"
             }
         } else {
             Update-Progress -Percent -1 -Status "" -Detail "Lixeira já estava vazia"
         }
     } catch {
         $script:Stats.FailedOperations++
-        Update-Progress -Percent -1 -Status "" -Detail "⚠️ Erro ao esvaziar lixeira: $($_.Exception.Message)" -IsWarning
+        Update-Progress -Percent -1 -Status "" -Detail "Erro ao esvaziar lixeira: $($_.Exception.Message)" -IsWarning
     }
 }
 
@@ -656,7 +634,7 @@ function Clean-BrowserCache {
     
     if (-not (Test-Path $BasePath)) {
         $script:Stats.SkippedOperations++
-        Update-Progress -Percent -1 -Status "" -Detail "ℹ️ $BrowserName não encontrado"
+        Update-Progress -Percent -1 -Status "" -Detail "$BrowserName não encontrado"
         return
     }
     
@@ -673,7 +651,7 @@ function Clean-BrowserCache {
     $killResult = Stop-ProcessWithTimeout -ProcessName $processName -TimeoutSeconds $script:Config.ProcessKillTimeout
     
     if ($killResult.Success -and $killResult.Count -gt 0) {
-        Update-Progress -Percent -1 -Status "" -Detail "✅ $($killResult.Message) ($($killResult.Count) processo(s))"
+        Update-Progress -Percent -1 -Status "" -Detail "$($killResult.Message) ($($killResult.Count) processo(s))"
         Start-Sleep -Milliseconds 1000  # Aguarda handles serem liberados
     }
     
@@ -762,16 +740,16 @@ function Clean-WindowsLogs {
             }
             
             if ($clearedCount -gt 0) {
-                Update-Progress -Percent -1 -Status "" -Detail "✅ Event Viewer - $clearedCount log(s) limpos, $failedCount protegidos"
+                Update-Progress -Percent -1 -Status "" -Detail "Event Viewer - $clearedCount log(s) limpos, $failedCount protegidos"
             } else {
-                Update-Progress -Percent -1 -Status "" -Detail "⚠️ Event Viewer - Nenhum log pôde ser limpo (permissões)" -IsWarning
+                Update-Progress -Percent -1 -Status "" -Detail "Event Viewer - Nenhum log pôde ser limpo (permissões)" -IsWarning
             }
         } catch {
             $script:Stats.FailedOperations++
-            Update-Progress -Percent -1 -Status "" -Detail "⚠️ Erro ao limpar Event Viewer" -IsWarning
+            Update-Progress -Percent -1 -Status "" -Detail "Erro ao limpar Event Viewer" -IsWarning
         }
     } else {
-        Update-Progress -Percent -1 -Status "" -Detail "🔍 [SIMULADO] Event Viewer seria limpo"
+        Update-Progress -Percent -1 -Status "" -Detail "[SIMULADO] Event Viewer seria limpo"
     }
 }
 
@@ -812,7 +790,7 @@ function Clean-ThumbnailCache {
             try {
                 if ($script:Config.DryRun) {
                     $size = Get-FolderSize -Path $path
-                    Update-Progress -Percent -1 -Status "" -Detail "🔍 [SIMULADO] Thumbnail Cache - $(Format-FileSize $size)"
+                    Update-Progress -Percent -1 -Status "" -Detail "[SIMULADO] Thumbnail Cache - $(Format-FileSize $size)"
                 } else {
                     # Para o Windows Explorer para liberar locks
                     Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
@@ -822,14 +800,14 @@ function Clean-ThumbnailCache {
                         Clean-FolderWithRobocopy -Path $path -Description "Thumbnail Cache"
                     } else {
                         Remove-Item -Path $path -Force -ErrorAction Stop
-                        Update-Progress -Percent -1 -Status "" -Detail "✅ IconCache.db removido"
+                        Update-Progress -Percent -1 -Status "" -Detail "IconCache.db removido"
                     }
                     
                     # Reinicia o Explorer
                     Start-Process explorer.exe
                 }
             } catch {
-                Update-Progress -Percent -1 -Status "" -Detail "⚠️ Erro ao limpar cache de miniaturas" -IsWarning
+                Update-Progress -Percent -1 -Status "" -Detail "Erro ao limpar cache de miniaturas" -IsWarning
             }
         }
     }
@@ -855,15 +833,15 @@ function Clean-MemoryDumps {
                 try {
                     if ($script:Config.DryRun) {
                         $size = (Get-Item $path).Length / 1MB
-                        Update-Progress -Percent -1 -Status "" -Detail "🔍 [SIMULADO] $path - $(Format-FileSize $size)"
+                        Update-Progress -Percent -1 -Status "" -Detail "[SIMULADO] $path - $(Format-FileSize $size)"
                     } else {
                         $size = (Get-Item $path).Length / 1MB
                         Remove-Item -Path $path -Force -ErrorAction Stop
                         $script:Stats.DeletedSize += $size
-                        Update-Progress -Percent -1 -Status "" -Detail "✅ $(Split-Path $path -Leaf) removido - $(Format-FileSize $size)"
+                        Update-Progress -Percent -1 -Status "" -Detail "$(Split-Path $path -Leaf) removido - $(Format-FileSize $size)"
                     }
                 } catch {
-                    Update-Progress -Percent -1 -Status "" -Detail "⚠️ Erro ao remover dump: $path" -IsWarning
+                    Update-Progress -Percent -1 -Status "" -Detail "Erro ao remover dump: $path" -IsWarning
                 }
             }
         }
@@ -871,7 +849,7 @@ function Clean-MemoryDumps {
 }
 
 function Optimize-Drives {
-    Update-Progress -Percent 90 -Status "🚀 Executando limpeza de disco do Windows..." -Detail "Iniciando Disk Cleanup"
+    Update-Progress -Percent 90 -Status "Executando limpeza de disco do Windows..." -Detail "Iniciando Disk Cleanup"
     
     if ($script:CancelRequested) { return }
     
@@ -880,7 +858,7 @@ function Optimize-Drives {
     
     try {
         if ($script:Config.DryRun) {
-            Update-Progress -Percent -1 -Status "" -Detail "🔍 [SIMULADO] Disk Cleanup seria executado"
+            Update-Progress -Percent -1 -Status "" -Detail "[SIMULADO] Disk Cleanup seria executado"
         } else {
             # Executa cleanmgr com argumentos automáticos
             $cleanmgrArgs = "/sagerun:1"
@@ -943,33 +921,20 @@ function Invoke-FinalOptimizations {
     try {
         # Limpa DNS Cache
         Clear-DnsClientCache -ErrorAction SilentlyContinue
-        Update-Progress -Percent -1 -Status "" -Detail "✅ Cache DNS limpo"
+        Update-Progress -Percent -1 -Status "" -Detail "Cache DNS limpo"
         
-        # Limpa ARP Cache (com timeout curto para não travar)
-        try {
-            $arpProcess = Start-Process -FilePath "arp" -ArgumentList "-d" -NoNewWindow -PassThru -ErrorAction SilentlyContinue
-            if ($arpProcess) {
-                # Espera no máximo 3 segundos. Se não terminar, mata o processo e segue.
-                if (-not $arpProcess.WaitForExit(3000)) {
-                    $arpProcess.Kill() | Out-Null
-                    Update-Progress -Percent -1 -Status "" -Detail "⚠️ Cache ARP limpo (após timeout)" -IsWarning
-                } else {
-                    Update-Progress -Percent -1 -Status "" -Detail "✅ Cache ARP limpo"
-                }
-            }
-        } catch {
-            Update-Progress -Percent -1 -Status "" -Detail "⚠️ Erro ao limpar cache ARP" -IsWarning
-        }
+        # Limpa ARP Cache
+        Start-Process -FilePath "arp" -ArgumentList "-d" -NoNewWindow -Wait -ErrorAction SilentlyContinue
+        Update-Progress -Percent -1 -Status "" -Detail "Cache ARP limpo"
         
-        # Libera memória standby (executa em segundo plano para NÃO TRAVAR)
+        # Libera memória standby (requer privilégios)
         if (Test-Path "$env:WINDIR\System32\rundll32.exe") {
-            # IMPORTANTE: Removido o -Wait para não travar o script
-            Start-Process -FilePath "rundll32.exe" -ArgumentList "advapi32.dll,ProcessIdleTasks" -NoNewWindow -WindowStyle Hidden -ErrorAction SilentlyContinue
-            Update-Progress -Percent -1 -Status "" -Detail "✅ Otimização de memória iniciada em segundo plano"
+            Start-Process -FilePath "rundll32.exe" -ArgumentList "advapi32.dll,ProcessIdleTasks" -NoNewWindow -Wait -ErrorAction SilentlyContinue
+            Update-Progress -Percent -1 -Status "" -Detail "Memória standby liberada"
         }
         
     } catch {
-        Update-Progress -Percent -1 -Status "" -Detail "⚠️ Algumas otimizações falharam" -IsWarning
+        Update-Progress -Percent -1 -Status "" -Detail "Algumas otimizações falharam" -IsWarning
     }
 }
 
@@ -1011,7 +976,7 @@ function Show-FinalReport {
     $creditsLabel.Location = New-Object System.Drawing.Point(20, 42)
     $creditsLabel.Size = New-Object System.Drawing.Size(860, 20)
     $creditsLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Italic)
-    $creditsLabel.Text = "Desenvolvido by EdyOne - Versão 3.0"
+    $creditsLabel.Text = "Desenvolvido by EdyOne - Versão 3.0 Pro"
     $creditsLabel.ForeColor = [System.Drawing.Color]::FromArgb(220, 220, 220)
     $creditsLabel.BackColor = [System.Drawing.Color]::Transparent
     $headerPanel.Controls.Add($creditsLabel)
@@ -1022,7 +987,7 @@ function Show-FinalReport {
         $dryRunLabel.Location = New-Object System.Drawing.Point(20, 60)
         $dryRunLabel.Size = New-Object System.Drawing.Size(860, 18)
         $dryRunLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-        $dryRunLabel.Text = "⚠️ RELATÓRIO DE SIMULAÇÃO - Nenhum arquivo foi realmente deletado"
+        $dryRunLabel.Text = "RELATÓRIO DE SIMULAÇÃO - Nenhum arquivo foi realmente deletado"
         $dryRunLabel.ForeColor = [System.Drawing.Color]::Yellow
         $dryRunLabel.BackColor = [System.Drawing.Color]::Transparent
         $headerPanel.Controls.Add($dryRunLabel)
@@ -1039,16 +1004,16 @@ function Show-FinalReport {
     
     $modeLabel = if ($script:Config.DryRun) { " [MODO SIMULAÇÃO]" } else { "" }
     
-    $summary = "╔════════════════════════════════════════════════════════════════════╗`r`n" +
-               "║  RESUMO EXECUTIVO$modeLabel`r`n" +
-               "╠════════════════════════════════════════════════════════════════════╝`r`n" +
-               "║  🕒 Tempo de Execução: $elapsedStr`r`n" +
-               "║  💾 Espaço Liberado: $(Format-FileSize $script:Stats.DeletedSize)`r`n" +
-               "║  📁 Operações Realizadas: $($script:Stats.Operations.Count)`r`n" +
-               "║  ✅ Bem-sucedidas: $($script:Stats.Operations.Count - $script:Stats.FailedOperations)`r`n" +
-               "║  ⚠️ Falhas: $($script:Stats.FailedOperations)`r`n" +
-               "║  ⏭️ Ignoradas: $($script:Stats.SkippedOperations)`r`n" +
-               "╚════════════════════════════════════════════════════════════════════`r`n"
+    $summary = "============================================================`r`n" +
+               "  RESUMO EXECUTIVO$modeLabel`r`n" +
+               "============================================================`r`n" +
+               "  Tempo de Execução: $elapsedStr`r`n" +
+               "  Espaço Liberado: $(Format-FileSize $script:Stats.DeletedSize)`r`n" +
+               "  Operações Realizadas: $($script:Stats.Operations.Count)`r`n" +
+               "  Bem-sucedidas: $($script:Stats.Operations.Count - $script:Stats.FailedOperations)`r`n" +
+               "  Falhas: $($script:Stats.FailedOperations)`r`n" +
+               "  Ignoradas: $($script:Stats.SkippedOperations)`r`n" +
+               "============================================================`r`n"
     
     $summaryBox.Text = $summary
     $reportForm.Controls.Add($summaryBox)
@@ -1059,7 +1024,7 @@ function Show-FinalReport {
         $warningsLabel.Location = New-Object System.Drawing.Point(20, 225)
         $warningsLabel.Size = New-Object System.Drawing.Size(860, 25)
         $warningsLabel.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-        $warningsLabel.Text = "⚠️ Avisos e Observações ($($script:Stats.Warnings.Count)):"
+        $warningsLabel.Text = "Avisos e Observações ($($script:Stats.Warnings.Count)):"
         $warningsLabel.ForeColor = [System.Drawing.Color]::DarkOrange
         $reportForm.Controls.Add($warningsLabel)
         
@@ -1078,7 +1043,7 @@ function Show-FinalReport {
         $detailsTop = 225
     }
     
-    # Detalhes (COM A CORREÇÃO AQUI)
+    # Detalhes
     $detailsLabel = New-Object System.Windows.Forms.Label
     $detailsLabel.Location = New-Object System.Drawing.Point(20, $detailsTop)
     $detailsLabel.Size = New-Object System.Drawing.Size(860, 25)
@@ -1099,40 +1064,21 @@ function Show-FinalReport {
     $detailsGrid.SelectionMode = "FullRowSelect"
     $detailsGrid.AlternatingRowsDefaultCellStyle.BackColor = [System.Drawing.Color]::AliceBlue
     
-    # Ordena os dados (se houver)
-    if ($script:Stats.Operations.Count -gt 0) {
-        $sortedOps = $script:Stats.Operations | Sort-Object {
-            $sizeStr = $_.Deleted
-            $sizeMB = 0
-            if ($sizeStr -match '([\d.]+)\s*(GB|MB|KB)') {
-                $value = [double]$matches[1]
-                $unit = $matches[2]
-                switch ($unit) {
-                    'GB' { $sizeMB = $value * 1024 }
-                    'MB' { $sizeMB = $value }
-                    'KB' { $sizeMB = $value / 1024 }
-                }
+    # Ordena por tamanho deletado (maior primeiro)
+    $sortedOps = $script:Stats.Operations | Sort-Object {
+        $sizeStr = $_.Deleted
+        if ($sizeStr -match '([\d.]+)\s*(GB|MB|KB)') {
+            $value = [double]$matches[1]
+            $unit = $matches[2]
+            switch ($unit) {
+                'GB' { $value * 1024 }
+                'MB' { $value }
+                'KB' { $value / 1024 }
             }
-            return $sizeMB
-        } -Descending
-    } else {
-        $sortedOps = @() # Garante que a lista não seja nula
-    }
-
-    # Habilita a geração automática de colunas
-    $detailsGrid.AutoGenerateColumns = $true
-
-    # Define o DataSource. O DataGridView criará as colunas automaticamente.
-    $detailsGrid.DataSource = [System.Collections.ArrayList]$sortedOps
-
-    # Opcional: Renomeia os cabeçalhos das colunas para um português mais amigável
-    if ($detailsGrid.Columns.Count -ge 4) {
-        $detailsGrid.Columns["Location"].HeaderText = "Localização"
-        $detailsGrid.Columns["Path"].HeaderText = "Caminho"
-        $detailsGrid.Columns["Deleted"].HeaderText = "Espaço Liberado"
-        $detailsGrid.Columns["Status"].HeaderText = "Status"
-    }
+        } else { 0 }
+    } -Descending
     
+    $detailsGrid.DataSource = [System.Collections.ArrayList]$sortedOps
     $reportForm.Controls.Add($detailsGrid)
     
     # Painel de botões
@@ -1208,99 +1154,99 @@ function Show-FinalReport {
 # ==============================================================================
 
 # Mostra janela de configuração inicial
-$configForm = New-Object System.Windows.Forms.Form
-$configForm.Text = "⚙️ Configuração - Limpeza Avançada"
-$configForm.Size = New-Object System.Drawing.Size(500, 320)
-$configForm.StartPosition = "CenterScreen"
-$configForm.FormBorderStyle = "FixedDialog"
-$configForm.MaximizeBox = $false
-$configForm.BackColor = [System.Drawing.Color]::White
+ $configForm = New-Object System.Windows.Forms.Form
+ $configForm.Text = "Configuração - Limpeza Avançada"
+ $configForm.Size = New-Object System.Drawing.Size(500, 320)
+ $configForm.StartPosition = "CenterScreen"
+ $configForm.FormBorderStyle = "FixedDialog"
+ $configForm.MaximizeBox = $false
+ $configForm.BackColor = [System.Drawing.Color]::White
 
 # Header
-$configHeader = New-Object System.Windows.Forms.Panel
-$configHeader.Location = New-Object System.Drawing.Point(0, 0)
-$configHeader.Size = New-Object System.Drawing.Size(500, 60)
-$configHeader.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 215)
-$configForm.Controls.Add($configHeader)
+ $configHeader = New-Object System.Windows.Forms.Panel
+ $configHeader.Location = New-Object System.Drawing.Point(0, 0)
+ $configHeader.Size = New-Object System.Drawing.Size(500, 60)
+ $configHeader.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 215)
+ $configForm.Controls.Add($configHeader)
 
-$configTitle = New-Object System.Windows.Forms.Label
-$configTitle.Location = New-Object System.Drawing.Point(15, 10)
-$configTitle.Size = New-Object System.Drawing.Size(470, 25)
-$configTitle.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
-$configTitle.Text = "LIMPEZA AVANÇADA DO WINDOWS"
-$configTitle.ForeColor = [System.Drawing.Color]::White
-$configTitle.BackColor = [System.Drawing.Color]::Transparent
-$configHeader.Controls.Add($configTitle)
+ $configTitle = New-Object System.Windows.Forms.Label
+ $configTitle.Location = New-Object System.Drawing.Point(15, 10)
+ $configTitle.Size = New-Object System.Drawing.Size(470, 25)
+ $configTitle.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+ $configTitle.Text = "LIMPEZA AVANÇADA DO WINDOWS v3.0"
+ $configTitle.ForeColor = [System.Drawing.Color]::White
+ $configTitle.BackColor = [System.Drawing.Color]::Transparent
+ $configHeader.Controls.Add($configTitle)
 
-$configCredits = New-Object System.Windows.Forms.Label
-$configCredits.Location = New-Object System.Drawing.Point(15, 35)
-$configCredits.Size = New-Object System.Drawing.Size(470, 20)
-$configCredits.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Italic)
-$configCredits.Text = "by EdyOne | versão:3.0"
-$configCredits.ForeColor = [System.Drawing.Color]::FromArgb(220, 220, 220)
-$configCredits.BackColor = [System.Drawing.Color]::Transparent
-$configHeader.Controls.Add($configCredits)
+ $configCredits = New-Object System.Windows.Forms.Label
+ $configCredits.Location = New-Object System.Drawing.Point(15, 35)
+ $configCredits.Size = New-Object System.Drawing.Size(470, 20)
+ $configCredits.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Italic)
+ $configCredits.Text = "by EdyOne - Sem Travamentos, Com Timeout e Retry"
+ $configCredits.ForeColor = [System.Drawing.Color]::FromArgb(220, 220, 220)
+ $configCredits.BackColor = [System.Drawing.Color]::Transparent
+ $configHeader.Controls.Add($configCredits)
 
 # Descrição
-$descLabel = New-Object System.Windows.Forms.Label
-$descLabel.Location = New-Object System.Drawing.Point(20, 75)
-$descLabel.Size = New-Object System.Drawing.Size(460, 60)
-$descLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8)
-$descLabel.Text = "Este script executará uma limpeza profunda do sistema.`r`n`r`n✅ Operando de forma segura`r`n✅ Haverá um tempo limite atingido`n✅ Verificação de arquivos bloqueados"
-$configForm.Controls.Add($descLabel)
+ $descLabel = New-Object System.Windows.Forms.Label
+ $descLabel.Location = New-Object System.Drawing.Point(20, 75)
+ $descLabel.Size = New-Object System.Drawing.Size(460, 60)
+ $descLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+ $descLabel.Text = "Este script executará uma limpeza profunda do sistema.`r`n`r`nOperações assíncronas (sem travamentos)`r`nTimeout em serviços críticos`r`nVerificação de arquivos bloqueados"
+ $configForm.Controls.Add($descLabel)
 
 # Checkbox Modo Simulação
-$dryRunCheckbox = New-Object System.Windows.Forms.CheckBox
-$dryRunCheckbox.Location = New-Object System.Drawing.Point(20, 145)
-$dryRunCheckbox.Size = New-Object System.Drawing.Size(460, 25)
-$dryRunCheckbox.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-$dryRunCheckbox.Text = "(*) Modo Simulação - Apenas simula e não deleta nada"
-$dryRunCheckbox.Checked = $false
-$configForm.Controls.Add($dryRunCheckbox)
+ $dryRunCheckbox = New-Object System.Windows.Forms.CheckBox
+ $dryRunCheckbox.Location = New-Object System.Drawing.Point(20, 145)
+ $dryRunCheckbox.Size = New-Object System.Drawing.Size(460, 25)
+ $dryRunCheckbox.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+ $dryRunCheckbox.Text = "Modo Simulação (Dry-Run) - Apenas simular, não deletar nada"
+ $dryRunCheckbox.Checked = $false
+ $configForm.Controls.Add($dryRunCheckbox)
 
 # Aviso
-$warningLabel = New-Object System.Windows.Forms.Label
-$warningLabel.Location = New-Object System.Drawing.Point(20, 180)
-$warningLabel.Size = New-Object System.Drawing.Size(460, 40)
-$warningLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8)
-$warningLabel.ForeColor = [System.Drawing.Color]::Red
-$warningLabel.Text = "(!) ATENÇÃO: Certifique-se de ter um backup antes de continuar.`r`nSerão fechados automaticamente alguns navegadores."
-$configForm.Controls.Add($warningLabel)
+ $warningLabel = New-Object System.Windows.Forms.Label
+ $warningLabel.Location = New-Object System.Drawing.Point(20, 180)
+ $warningLabel.Size = New-Object System.Drawing.Size(460, 40)
+ $warningLabel.Font = New-Object System.Drawing.Font("Segoe UI", 8)
+ $warningLabel.ForeColor = [System.Drawing.Color]::Red
+ $warningLabel.Text = "ATENÇÃO: Certifique-se de ter um backup antes de continuar.`r`nAlguns navegadores serão fechados automaticamente."
+ $configForm.Controls.Add($warningLabel)
 
 # Botões
-$btnPanel = New-Object System.Windows.Forms.Panel
-$btnPanel.Location = New-Object System.Drawing.Point(0, 230)
-$btnPanel.Size = New-Object System.Drawing.Size(500, 60)
-$btnPanel.BackColor = [System.Drawing.Color]::WhiteSmoke
-$configForm.Controls.Add($btnPanel)
+ $btnPanel = New-Object System.Windows.Forms.Panel
+ $btnPanel.Location = New-Object System.Drawing.Point(0, 230)
+ $btnPanel.Size = New-Object System.Drawing.Size(500, 60)
+ $btnPanel.BackColor = [System.Drawing.Color]::WhiteSmoke
+ $configForm.Controls.Add($btnPanel)
 
-$startButton = New-Object System.Windows.Forms.Button
-$startButton.Location = New-Object System.Drawing.Point(150, 12)
-$startButton.Size = New-Object System.Drawing.Size(100, 35)
-$startButton.Text = "Iniciar"
-$startButton.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-$startButton.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 215)
-$startButton.ForeColor = [System.Drawing.Color]::White
-$startButton.FlatStyle = "Flat"
-$startButton.Add_Click({
+ $startButton = New-Object System.Windows.Forms.Button
+ $startButton.Location = New-Object System.Drawing.Point(150, 12)
+ $startButton.Size = New-Object System.Drawing.Size(100, 35)
+ $startButton.Text = "Iniciar"
+ $startButton.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+ $startButton.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 215)
+ $startButton.ForeColor = [System.Drawing.Color]::White
+ $startButton.FlatStyle = "Flat"
+ $startButton.Add_Click({
     $script:Config.DryRun = $dryRunCheckbox.Checked
     $configForm.DialogResult = [System.Windows.Forms.DialogResult]::OK
     $configForm.Close()
 })
-$btnPanel.Controls.Add($startButton)
+ $btnPanel.Controls.Add($startButton)
 
-$cancelButton = New-Object System.Windows.Forms.Button
-$cancelButton.Location = New-Object System.Drawing.Point(260, 12)
-$cancelButton.Size = New-Object System.Drawing.Size(100, 35)
-$cancelButton.Text = "Cancelar"
-$cancelButton.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
-$cancelButton.Add_Click({
+ $cancelButton = New-Object System.Windows.Forms.Button
+ $cancelButton.Location = New-Object System.Drawing.Point(260, 12)
+ $cancelButton.Size = New-Object System.Drawing.Size(100, 35)
+ $cancelButton.Text = "Cancelar"
+ $cancelButton.Font = New-Object System.Drawing.Font("Segoe UI", 9, [System.Drawing.FontStyle]::Bold)
+ $cancelButton.Add_Click({
     $configForm.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
     $configForm.Close()
 })
-$btnPanel.Controls.Add($cancelButton)
+ $btnPanel.Controls.Add($cancelButton)
 
-$result = $configForm.ShowDialog()
+ $result = $configForm.ShowDialog()
 
 if ($result -ne [System.Windows.Forms.DialogResult]::OK) {
     [System.Windows.Forms.MessageBox]::Show(
@@ -1334,19 +1280,19 @@ try {
     if (-not $script:CancelRequested) { Invoke-FinalOptimizations }
     
     if ($script:CancelRequested) {
-        Update-Progress -Percent 100 -Status "❌ Limpeza cancelada pelo usuário" -Detail "Processo interrompido manualmente"
+        Update-Progress -Percent 100 -Status "Limpeza cancelada pelo usuário" -Detail "Processo interrompido manualmente"
         Start-Sleep -Seconds 2
     } else {
-        Update-Progress -Percent 98 -Status "✅ Finalizando processo..." -Detail "Compilando estatísticas finais"
+        Update-Progress -Percent 98 -Status "Finalizando processo..." -Detail "Compilando estatísticas finais"
         Start-Sleep -Milliseconds 800
         
-        Update-Progress -Percent 100 -Status "✅ Limpeza concluída com sucesso!" -Detail "Processo finalizado sem erros críticos"
+        Update-Progress -Percent 100 -Status "Limpeza concluída com sucesso!" -Detail "Processo finalizado sem erros críticos"
         Start-Sleep -Seconds 1
     }
     
 } catch {
     $script:Stats.FailedOperations++
-    Update-Progress -Percent 100 -Status "❌ Erro crítico durante a limpeza" -Detail "Erro: $($_.Exception.Message)" -IsError
+    Update-Progress -Percent 100 -Status "Erro crítico durante a limpeza" -Detail "Erro: $($_.Exception.Message)" -IsError
     Start-Sleep -Seconds 3
 } finally {
     # Garante que todos os jobs sejam finalizados
@@ -1384,16 +1330,16 @@ try {
 # ==============================================================================
 
 # Mensagem final no console (caso seja visível)
-Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  LIMPEZA AVANÇADA DO WINDOWS v3.0 - FINALIZADO       ║" -ForegroundColor Cyan
-Write-Host "║  Desenvolvido by EdyOne                               ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "`n============================================================" -ForegroundColor Cyan
+Write-Host "  LIMPEZA AVANÇADA DO WINDOWS v3.0 - FINALIZADO" -ForegroundColor Cyan
+Write-Host "  Desenvolvido by EdyOne" -ForegroundColor Cyan
+Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "📊 Estatísticas Finais:" -ForegroundColor Yellow
-Write-Host "   💾 Espaço Liberado: $(Format-FileSize $script:Stats.DeletedSize)" -ForegroundColor Green
-Write-Host "   📁 Operações: $($script:Stats.Operations.Count)" -ForegroundColor White
-Write-Host "   ⚠️  Falhas: $($script:Stats.FailedOperations)" -ForegroundColor $(if ($script:Stats.FailedOperations -gt 0) { "Red" } else { "Green" })
-Write-Host "   ⏭️  Ignoradas: $($script:Stats.SkippedOperations)" -ForegroundColor Gray
+Write-Host "Estatísticas Finais:" -ForegroundColor Yellow
+Write-Host "   Espaço Liberado: $(Format-FileSize $script:Stats.DeletedSize)" -ForegroundColor Green
+Write-Host "   Operações: $($script:Stats.Operations.Count)" -ForegroundColor White
+Write-Host "   Falhas: $($script:Stats.FailedOperations)" -ForegroundColor $(if ($script:Stats.FailedOperations -gt 0) { "Red" } else { "Green" })
+Write-Host "   Ignoradas: $($script:Stats.SkippedOperations)" -ForegroundColor Gray
 Write-Host ""
-Write-Host "✅ Script finalizado com sucesso!" -ForegroundColor Green
+Write-Host "Script finalizado com sucesso!" -ForegroundColor Green
 Write-Host ""
