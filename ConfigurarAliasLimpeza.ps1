@@ -1,5 +1,5 @@
 # =============================================================
-#     INSTALADOR AVANÇADO - VERSÃO FINAL - LIMPEZA AVANÇADA
+#     INSTALADOR AVANÇADO
 # =============================================================
 
 # --- AUTOELEVAÇÃO ---
@@ -11,6 +11,7 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 Write-Host "===========================================================" -ForegroundColor Cyan
 Write-Host "  Instalação Avançada - Limpeza Avançada by EdyOne" -ForegroundColor White
+Write-Host "  (Versão Local com Arquivo .bat)" -ForegroundColor Gray
 Write-Host "===========================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -18,11 +19,13 @@ Write-Host ""
 
  $localFolder = "$env:LOCALAPPDATA\LimpezaAvancada"
  $iconLocalPath = "$localFolder\icone.ico"
- $launcherPath = "$localFolder\launcher.ps1"
- $failoverPath = "$localFolder\failover.ps1"
- $hashFile = "$localFolder\hash.txt"
  $logFile = "$localFolder\log.txt"
 
+# NOVOS CAMINHOS
+ $localScriptPath = "$localFolder\LimpezaAvancada.ps1"  # O script será baixado e salvo aqui
+ $batchFilePath = "$localFolder\ExecutarLimpeza.bat"    # O arquivo .bat será criado aqui
+
+# URL CORRIGIDA (Branch MAIN)
  $mainScriptURL = "https://raw.githubusercontent.com/edgardocorrea/LimpezaAvancada/main/LimpezaAvancada.ps1"
  $iconURL = "https://github.com/edgardocorrea/LimpezaAvancada/raw/refs/heads/main/icone.ico"
 
@@ -31,77 +34,75 @@ if (-not (Test-Path $localFolder)) {
     New-Item -Path $localFolder -ItemType Directory -Force | Out-Null
 }
 
-# --- CRIA LOG IMEDIATAMENTE (PARA VERIFICAR PERMISSÕES) ---
-Add-Content -Path $logFile -Value "Log inicializado pelo instalador em $(Get-Date)" -Encoding UTF8 -Force
 Write-Host "Pasta de instalação: $localFolder" -ForegroundColor Green
-Write-Host "Arquivo de log criado: $logFile" -ForegroundColor Green
 
-# --- FAILOVER PS1 ---
- $failoverContent = @'
-Write-Host "⚠ Modo Offline: GitHub indisponível. Executando limpeza básica..." -ForegroundColor Yellow
-Start-Sleep 2
-Write-Host "Limpeza básica concluída." -ForegroundColor Green
-'@
-Set-Content $failoverPath -Value $failoverContent -Encoding UTF8 -Force
+# --- CRIA LOG ---
+Add-Content -Path $logFile -Value "Log iniciado pelo instalador em $(Get-Date)" -Encoding UTF8 -Force
 
-# --- ARQUIVO DE HASH ---
-Set-Content $hashFile -Value "SHA256-CHANGE-ME" -Encoding UTF8 -Force
-
-# --- LAUNCHER AVANÇADO ---
- $launcherContent = @"
-# ================================================
-#  Launcher Avançado - Limpeza Avançada
-# ================================================
-
-\`$url = '$mainScriptURL'
-\`$failover = '$failoverPath'
-\`$log = '$logFile'
-\`$hashFile = '$hashFile'
-
-Function Log(\`$msg) {
-    try {
-        Add-Content -Path \`$log -Value "[\$(Get-Date)] \`$msg" -ErrorAction Stop
-    } catch {
-        Write-Host "ERRO AO ESCREVER NO LOG: \`$_" -ForegroundColor Red
-    }
-}
-
-Function Get-SHA256(\`$data) {
-    \`$sha256 = [System.Security.Cryptography.SHA256]::Create()
-    \`$bytes = [System.Text.Encoding]::UTF8.GetBytes(\`$data)
-    (\`$sha256.ComputeHash(\`$bytes) | ForEach-Object ToString x2) -join ''
-}
-
-Log "Iniciando execução..."
-
+# --- PASSO 1: BAIXAR O SCRIPT PRINCIPAL PARA USO LOCAL ---
+Write-Host "Baixando script principal (LimpezaAvancada.ps1)..." -ForegroundColor Yellow
 try {
-    \`$script = Invoke-RestMethod -Uri \`$url -ErrorAction Stop
-    Log "Script baixado com sucesso."
-
-    \`$expected = Get-Content \`$hashFile -Raw
-    if (\`$expected -and \`$expected -ne 'SHA256-CHANGE-ME') {
-        \`$hash = Get-SHA256 \`$script
-        if (\`$hash -ne \`$expected.Trim()) {
-            Log "Hash inválido! Usando failover."
-            Invoke-Expression (Get-Content \`$failover -Raw)
-            exit
-        }
-    }
-
-    Log "Executando script remoto..."
-    Invoke-Expression \`$script
+    # Verifica se a pasta existe antes de tentar baixar
+    Invoke-WebRequest -Uri $mainScriptURL -OutFile $localScriptPath -ErrorAction Stop
+    Write-Host "   Script principal baixado com sucesso!" -ForegroundColor Green
+} catch {
+    Write-Host "   ERRO FATAL: Não foi possível baixar o script principal: $_" -ForegroundColor Red
+    Write-Host "   Verifique sua conexão com a internet ou a URL do GitHub." -ForegroundColor Red
+    Pause
+    exit
 }
-catch {
-    # GRAVA O ERRO DETALHADO NO LOG
-    Log "ERRO DE CONEXÃO: \`$_"
-    Log "Falha ao baixar script online. Executando failover."
-    Invoke-Expression (Get-Content \`$failover -Raw)
-}
+
+# --- PASSO 2: CRIAR O ARQUIVO DE LOTE (.BAT) ---
+Write-Host "Criando arquivo de execução (.bat)..." -ForegroundColor Yellow
+
+# Aqui está o conteúdo do seu arquivo de lote
+ $batchContent = @"
+@echo off
+:: ============================================
+:: Limpeza Avançada by EdyOne
+:: Executa com privilégios de Administrador
+:: ============================================
+
+echo.
+echo ================================================
+echo   Limpeza Avancada do Windows by EdyOne
+echo ================================================
+echo.
+
+:: Verifica se já está rodando como Admin
+net session >nul 2>&1
+if %errorLevel% == 0 (
+    echo [OK] Executando como Administrador...
+    goto :ExecutarLimpeza
+) else (
+    echo [!] Solicitando privilegios de Administrador...
+    echo.
+    
+    :: Solicita elevação e executa o script PowerShell local
+    powershell.exe -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
+:ExecutarLimpeza
+echo.
+echo [1/2] Iniciando script de limpeza...
+echo.
+
+:: Executa o script PowerShell local (que está na mesma pasta)
+powershell.exe -ExecutionPolicy Bypass -NoProfile -File "%~dp0LimpezaAvancada.ps1"
+
+echo.
+echo [2/2] Limpeza concluida!
+echo.
+echo Pressione qualquer tecla para fechar...
+pause >nul
+exit
 "@
 
-Set-Content -Path $launcherPath -Value $launcherContent -Encoding UTF8 -Force
+Set-Content -Path $batchFilePath -Value $batchContent -Encoding ASCII -Force
+Write-Host "   Arquivo .bat criado." -ForegroundColor Green
 
-# --- DOWNLOAD DO ÍCONE ---
+# --- PASSO 3: BAIXAR ÍCONE ---
 Write-Host "Baixando ícone..." -ForegroundColor Yellow
 try {
     Invoke-WebRequest $iconURL -OutFile $iconLocalPath -ErrorAction Stop
@@ -111,26 +112,26 @@ try {
     $iconLocalPath = "%SystemRoot%\System32\shell32.dll,265"
 }
 
-# --- CRIAÇÃO DO ATALHO ---
-Write-Host "Criando atalho..." -ForegroundColor Yellow
+# --- PASSO 4: CRIAR ATALHO (.LNK) ---
+Write-Host "Criando atalho na Área de Trabalho..." -ForegroundColor Yellow
 
  $desktopPath = [Environment]::GetFolderPath("Desktop")
  $shortcutPath = Join-Path $desktopPath "Limpeza Avançada.lnk"
 
  $shell = New-Object -ComObject WScript.Shell
  $shortcut = $shell.CreateShortcut($shortcutPath)
- $shortcut.TargetPath = "powershell.exe"
- $shortcut.Arguments = "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$launcherPath`""
- $shortcut.WorkingDirectory = "%windir%"
+
+# O atalho agora aponta para o arquivo .bat
+ $shortcut.TargetPath = $batchFilePath
+ $shortcut.WorkingDirectory = $localFolder
  $shortcut.IconLocation = "$iconLocalPath,0"
- $shortcut.Description = "Limpeza Avançada - versão robusta"
+ $shortcut.Description = "Limpeza Avançada - by EdyOne"
  $shortcut.Save()
 
-Write-Host "   Atalho criado." -ForegroundColor Green
+Write-Host "   Atalho criado apontando para o .bat" -ForegroundColor Green
 
-# --- REFRESH DOS ÍCONES (CORRIGIDO) ---
+# --- REFRESH DOS ÍCONES ---
 Write-Host "Atualizando ícones..." -ForegroundColor Yellow
-
  $code = @'
 using System.Runtime.InteropServices;
 public class DesktopRefresh {
@@ -140,27 +141,19 @@ public class DesktopRefresh {
     uint flags, uint timeout, out IntPtr result);
 }
 '@
-
-# Verifica se o tipo já existe para não dar erro
 if (-not ("DesktopRefresh" -as [type])) {
-    try {
-        Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue
-    } catch {
-        # Ignora erro se já foi carregado
-    }
+    try { Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue } catch {}
 }
-
-try {
-    [DesktopRefresh]::SendMessageTimeout(0xFFFF,0x1A,0,"Environment",0,1000,[ref]([IntPtr]::Zero)) | Out-Null
-} catch {
-    # Ignora erro de refresh
-}
+try { [DesktopRefresh]::SendMessageTimeout(0xFFFF,0x1A,0,"Environment",0,1000,[ref]([IntPtr]::Zero)) | Out-Null } catch {}
 
 Write-Host ""
 Write-Host "===========================================================" -ForegroundColor Green
-Write-Host " INSTALAÇÃO AVANÇADA CONCLUÍDA!" -ForegroundColor White
+Write-Host " INSTALAÇÃO AVANÇADA CONCLUÍDA (Modo OFFLINE)!" -ForegroundColor White
 Write-Host "===========================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "1. Verifique se o arquivo $logFile foi criado." -ForegroundColor Cyan
-Write-Host "2. Execute o atalho na Área de Trabalho para testar." -ForegroundColor Cyan
-Write-Host "3. Se cair em 'Modo Offline', abra o log.txt para ver o erro." -ForegroundColor Cyan
+Write-Host "Arquivos criados:" -ForegroundColor Cyan
+Write-Host "  1. Script: $localScriptPath" -ForegroundColor White
+Write-Host "  2. Lote:   $batchFilePath" -ForegroundColor White
+Write-Host "  3. Atalho: $shortcutPath" -ForegroundColor White
+Write-Host ""
+Write-Host "O programa agora funciona sem internet após a instalação." -ForegroundColor Gray
