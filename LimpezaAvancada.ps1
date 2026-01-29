@@ -1,19 +1,3 @@
-
-
-O aviso do GitHub ("detected the file encoding as UTF-16LE") e o caractere estranho no início do seu código (`﻿`) indicam o problema principal: **Codificação de arquivo**.
-
-O arquivo está salvo como **UTF-16** (padrão do Windows em alguns editores), mas o PowerShell e o GitHub funcionam melhor com **UTF-8**.
-
-Isso pode causar falhas ao baixar o script via `Invoke-RestMethod` (o Launcher pode ler caracteres corrompidos) ou erros de execução.
-
-Abaixo está o **código corrigido e limpo**.
-1. Removi o caractere `﻿` (BOM) que estava no início.
-2. Garanti que a estrutura está intacta.
-3. **Importante:** Para corrigir no GitHub, você deve salvar este código abaixo no seu computador como **UTF-8** (usando o VS Code ou Bloco de Notas selecionando "Codificação UTF-8") e fazer upload/commit novamente.
-
-Aqui está o script completo e corrigido:
-
-```powershell
 <#
 .SYNOPSIS
     Limpeza Avançada do Windows - v3.0 - by EdyOne
